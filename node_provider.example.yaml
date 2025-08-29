@@ -1,0 +1,69 @@
+apiVersion: management.loft.sh/v1
+kind: NodeProvider
+metadata:
+  name: auto-nodes-gcp
+spec:
+  terraform:
+    nodeEnvironmentTemplate:
+      git:
+        repository: https://github.com/loft-sh/vcluster-auto-nodes-gcp.git
+        subPath: environment
+    nodeTemplate:
+      git:
+        repository: https://github.com/loft-sh/vcluster-auto-nodes-gcp.git
+        subPath: node
+    nodeTypes:
+    - name: e2-small
+      resources:
+        cpu: "2"
+        memory: 2Gi
+      properties:
+        instance-type: e2-small
+        region: "us-east1"
+        zone: "us-east1-b,us-east1-c,us-east1-c"
+        project: "*"
+    - name: e2-medium
+      resources:
+        cpu: "2"
+        memory: 4Gi
+      properties:
+        instance-type: e2-medium
+        region: "us-east1"
+        zone: "us-east1-b,us-east1-c,us-east1-c"
+        project: "*"
+    - name: e2-standard-2
+      resources:
+        cpu: "2"
+        memory: 8Gi
+      properties:
+        instance-type: e2-standard-2
+        region: "us-east1"
+        zone: "us-east1-b,us-east1-c,us-east1-c"
+        project: "*"
+    - name: e2-standard-4
+      resources:
+        cpu: "4"
+        memory: 16Gi
+      properties:
+        instance-type: e2-standard-4
+        region: "us-east1"
+        zone: "us-east1-b,us-east1-c,us-east1-c"
+        project: "*"
+    - name: e2-standard-8
+      resources:
+        cpu: "8"
+        memory: 32Gi
+      properties:
+        instance-type: e2-standard-8
+        region: "us-east1"
+        zone: "us-east1-b,us-east1-c,us-east1-c"
+        project: "*"
+    - name: e2-standard-16
+      resources:
+        cpu: "16"
+        memory: 64Gi
+      properties:
+        instance-type: e2-standard-16
+        region: "us-east1"
+        zone: "us-east1-b,us-east1-c,us-east1-c"
+        project: "*"
