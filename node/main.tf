@@ -11,6 +11,14 @@ module "validation" {
   zone    = try(nonsensitive(var.vcluster.requirements["zone"]), "")
 }
 
+module "validation" {
+  source = "./validation"
+
+  project = nonsensitive(var.vcluster.requirements["project"])
+  region  = nonsensitive(var.vcluster.requirements["region"])
+  zone    = try(nonsensitive(var.vcluster.requirements["zone"]), "")
+}
+
 resource "random_id" "vm_suffix" {
   byte_length = 4
 }
