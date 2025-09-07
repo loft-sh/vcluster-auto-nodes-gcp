@@ -23,7 +23,7 @@ locals {
   region   = nonsensitive(split(",", var.region)[0])
   project  = nonsensitive(split(",", var.project)[0])
   raw_zone = nonsensitive(split(",", var.zone)[0])
-  zone     = var.zone != "*" ? var.zone : ""
+  zone     = local.raw_zone == "*" ? "" : local.raw_zone
 }
 
 data "google_project" "project" {

@@ -11,14 +11,6 @@ module "validation" {
   zone    = try(nonsensitive(var.vcluster.requirements["zone"]), "")
 }
 
-module "validation" {
-  source = "./validation"
-
-  project = nonsensitive(var.vcluster.requirements["project"])
-  region  = nonsensitive(var.vcluster.requirements["region"])
-  zone    = try(nonsensitive(var.vcluster.requirements["zone"]), "")
-}
-
 resource "random_id" "vm_suffix" {
   byte_length = 4
 }
@@ -28,7 +20,7 @@ module "private_instance" {
   version = "~> 13.0"
 
   region            = local.region
-  zone              = local.zone
+  zone              = local.zone == "" ? null : local.zone
   subnetwork        = local.subnet_name
   num_instances     = 1
   hostname          = "${var.vcluster.name}-${random_id.vm_suffix.hex}"
