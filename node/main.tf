@@ -1,31 +1,14 @@
-terraform {
-  required_version = ">= 1.5"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 6"
-    }
-  }
-}
-
-locals {
-  project = var.vcluster.requirements["project"]
-  region  = var.vcluster.requirements["region"]
-  zone    = var.vcluster.requirements["zone"]
-
-  vcluster_name      = var.vcluster.instance.metadata.name
-  vcluster_namespace = var.vcluster.instance.metadata.namespace
-
-  network_name = var.vcluster.nodeEnvironment.outputs["network_name"]
-  subnet_name  = var.vcluster.nodeEnvironment.outputs["subnet_name"]
-
-  instance_type = var.vcluster.nodeType.spec.properties["instance-type"]
-}
-
 provider "google" {
   project = local.project
   region  = local.region
-  zone    = local.zone
+}
+
+module "validation" {
+  source = "./validation"
+
+  project = nonsensitive(var.vcluster.requirements["project"])
+  region  = nonsensitive(var.vcluster.requirements["region"])
+  zone    = try(nonsensitive(var.vcluster.requirements["zone"]), "")
 }
 
 resource "random_id" "vm_suffix" {
