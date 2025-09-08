@@ -17,7 +17,8 @@ privateNodes:
       provider: gcp-compute
       requirements:
       - property: instance-type
-        value: ["e2-medium", "e2-standard-2", "e2-standard-4"]
+        operator: In
+        values: ["e2-medium", "e2-standard-2", "e2-standard-4"]
 ```
 
 ## Overview
@@ -50,8 +51,9 @@ Per virtual cluster, it'll create (see [Node](./node/)):
 1. Access to a GCP account
 2. A host kubernetes cluster, preferrably on GKE to use Workload Identity
 3. vCluster Platform running in the host cluster. [Get started](https://www.vcluster.com/docs/platform/install/quick-start-guide)
-4. (optional) The [vCluster CLI](https://www.vcluster.com/docs/vcluster/#deploy-vcluster)
-5. (optional) Authenticate the vCluster CLI `vcluster platform login $YOUR_PLATFORM_HOST`
+4. Ensure the [Cloud Resource Manager API](https://cloud.google.com/resource-manager/docs) is enabled in your GCP account
+5. (optional) The [vCluster CLI](https://www.vcluster.com/docs/vcluster/#deploy-vcluster)
+6. (optional) Authenticate the vCluster CLI `vcluster platform login $YOUR_PLATFORM_HOST`
 
 ### Setup
 
@@ -69,7 +71,19 @@ Auto Nodes supports two authentication methods for GCP resources. **Workload Ide
 ##### Option A: Workload Identity (Recommended)
 
 [Configure GKE Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) to grant the vCluster control plane permissions to manage Compute Instances.
-Next, create [an IAM role](./docs/auto_nodes_role.yaml) `gcloud iam roles create vClusterPlatformAutoNodes --organization|project=$ORG_ID|$PROJECT_ID --file=./auto_nodes_role.yaml` and assign the role to your IAM principal to authenticate the terraform provider.
+Next, create [an IAM role](./docs/auto_nodes_role.yaml) for your organization
+
+```bash
+gcloud iam roles create vClusterPlatformAutoNodes --organization=$ORG_ID --file=./auto_nodes_role.yaml
+```
+
+or for your project
+
+```bash
+gcloud iam roles create vClusterPlatformAutoNodes --project=$PROJECT_ID --file=./auto_nodes_role.yaml
+```
+
+Assign the role you just created to your IAM principal to authenticate the terraform provider.
 
 ##### Option B: Manual secrets
 
@@ -113,7 +127,8 @@ privateNodes:
       provider: gcp-compute
       requirements:
       - property: instance-type
-        value: ["Standard_D2s_v5", "Standard_D4s_v5", "Standard_D8s_v5"]
+        operator: In
+        values: ["Standard_D2s_v5", "Standard_D4s_v5", "Standard_D8s_v5"]
       limits:
         cpu: "100"
         memory: "200Gi"
