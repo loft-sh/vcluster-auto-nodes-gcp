@@ -1,0 +1,55 @@
+title: "vCluster Platform Auto Nodes"
+description: "Service Account role for vCluster Platform Auto Nodes with Workload Identity"
+stage: "GA"
+includedPermissions:
+  # VPC and Networking
+  - compute.networks.create
+  - compute.networks.delete
+  - compute.networks.get
+  - compute.networks.updatePolicy
+  - compute.subnetworks.create
+  - compute.subnetworks.delete
+  - compute.subnetworks.get
+  - compute.subnetworks.update
+  - compute.subnetworks.use
+  - compute.subnetworks.useExternalIp
+  - compute.routers.create
+  - compute.routers.delete
+  - compute.routers.get
+  - compute.routers.update
+  - compute.firewalls.create
+  - compute.firewalls.delete
+  - compute.firewalls.get
+  - compute.firewalls.update
+  
+  # VM
+  - compute.instances.create
+  - compute.instances.delete
+  - compute.instances.get
+  - compute.instances.setMetadata
+  - compute.instances.setTags
+  - compute.instances.setLabels
+  - compute.instances.use
+  - compute.instances.setServiceAccount
+  - compute.instanceTemplates.create
+  - compute.instanceTemplates.delete
+  - compute.instanceTemplates.get
+  - compute.instanceTemplates.useReadOnly
+  - compute.disks.create
+  - compute.disks.createSnapshot
+  - compute.disks.delete
+  - compute.disks.get
+  - compute.disks.setLabels
+  - compute.disks.use
+  - compute.images.get
+  - compute.images.list
+
+  # General
+  - compute.regions.get
+  - compute.regions.list
+  - compute.zones.get
+  - compute.zones.list
+  - resourcemanager.projects.get
+  - iam.serviceAccounts.actAs
+  - iam.serviceAccounts.get
+  - compute.projects.get
