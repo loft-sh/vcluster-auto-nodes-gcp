@@ -6,9 +6,9 @@ provider "google" {
 module "validation" {
   source = "./validation"
 
-  project = nonsensitive(var.vcluster.requirements["project"])
-  region  = nonsensitive(var.vcluster.requirements["region"])
-  zone    = try(nonsensitive(var.vcluster.requirements["zone"]), "")
+  project = nonsensitive(var.vcluster.nodeType.spec.properties["project"])
+  region  = nonsensitive(var.vcluster.nodeType.spec.properties["region"])
+  zone    = try(nonsensitive(var.vcluster.nodeType.spec.properties["zone"]), "")
 }
 
 resource "random_id" "vm_suffix" {
@@ -32,6 +32,7 @@ module "private_instance" {
   labels = {
     vcluster  = local.vcluster_name
     namespace = local.vcluster_namespace
+    cluster-name = local.vcluster_name
   }
 }
 
@@ -53,7 +54,7 @@ module "instance_template" {
   network            = local.network_name
   subnetwork         = local.subnet_name
   subnetwork_project = local.project
-  tags               = ["allow-iap-ssh"] # for IAP SSH access
+  tags               = ["allow-iap-ssh", local.vcluster_name] # for IAP SSH access
 
   machine_type = local.instance_type
 
@@ -65,8 +66,7 @@ module "instance_template" {
   disk_type    = "pd-standard"
 
   service_account = {
-    # Use default compute service account
-    email  = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+    email  = local.service_account_email
     scopes = ["cloud-platform"]
   }
 

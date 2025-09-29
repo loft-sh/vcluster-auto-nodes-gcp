@@ -1,0 +1,169 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cloud-controller-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager
+  labels:
+    app.kubernetes.io/name: cloud-controller-manager
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["nodes/status"]
+    verbs: ["patch"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["services/status"]
+    verbs: ["list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["create", "get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["create", "get", "list", "watch", "update"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create", "get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cloud-controller-manager:apiserver-authentication-reader
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - kind: ServiceAccount
+    name: cloud-controller-manager
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:cloud-controller-manager
+  labels:
+    app.kubernetes.io/name: cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+subjects:
+  - kind: ServiceAccount
+    name: cloud-controller-manager
+    namespace: kube-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gcp-cloud-config
+  namespace: kube-system
+data:
+  cloud-config: |
+    [Global]
+    node-tags = ${vcluster_name}
+    network-name = ${network_name}
+    subnetwork-name = ${subnet_name}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cloud-controller-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloud-controller-manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloud-controller-manager
+        tier: control-plane
+    spec:
+      hostNetwork: true
+      dnsPolicy: Default
+      serviceAccountName: cloud-controller-manager
+      priorityClassName: system-cluster-critical
+      tolerations:
+        - key: node.cloudprovider.kubernetes.io/uninitialized
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: karpenter.sh/unregistered
+          effect: NoExecute
+      containers:
+        - name: cloud-controller-manager
+          imagePullPolicy: IfNotPresent
+          image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v33.1.1
+          command:
+          - /cloud-controller-manager
+          args:
+            - --v=2
+            - --cloud-provider=gce
+            - --use-service-account-credentials=false
+            - --configure-cloud-routes=false
+            - --controllers=*,-node-ipam-controller
+            - --leader-elect-resource-lock=leases
+            - --cluster-name=${vcluster_name}
+            - --cloud-config=/etc/kubernetes/cloud-config
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /healthz
+              port: 10258
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "200m"
+          volumeMounts:
+            - name: cloud-config
+              mountPath: /etc/kubernetes
+              readOnly: true
+      volumes:
+        - name: cloud-config
+          configMap:
+            name: gcp-cloud-config
+            items:
+              - key: cloud-config
+                path: cloud-config
