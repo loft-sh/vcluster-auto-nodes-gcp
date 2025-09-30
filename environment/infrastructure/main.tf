@@ -6,8 +6,8 @@ provider "google" {
 module "validation" {
   source = "./validation"
 
-  project = nonsensitive(var.vcluster.requirements["project"])
-  region  = nonsensitive(var.vcluster.requirements["region"])
+  project = nonsensitive(var.vcluster.properties["project"])
+  region  = nonsensitive(var.vcluster.properties["region"])
 }
 
 resource "random_id" "vpc_suffix" {
