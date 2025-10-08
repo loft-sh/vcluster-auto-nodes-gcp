@@ -1,5 +1,5 @@
 ##########
-# CCM 
+# CCM
 #########
 
 module "kubernetes_apply_ccm" {
@@ -10,6 +10,7 @@ module "kubernetes_apply_ccm" {
     network_name  = local.network_name
     subnet_name   = local.subnet_name
     vcluster_name = local.vcluster_name
+    node_provider_name = local.node_provider_name
   }
 }
 

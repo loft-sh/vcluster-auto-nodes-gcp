@@ -602,6 +602,7 @@ spec:
       hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
+        vcluster.loft.sh/node-provider: ${node_provider_name}
       priorityClassName: csi-gce-pd-controller
       serviceAccountName: csi-gce-pd-controller-sa
       volumes:
@@ -677,6 +678,7 @@ spec:
       hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
+        vcluster.loft.sh/node-provider: ${node_provider_name}
       priorityClassName: csi-gce-pd-node
       serviceAccountName: csi-gce-pd-node-sa
       tolerations:

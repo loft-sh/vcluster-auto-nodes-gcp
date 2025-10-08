@@ -111,6 +111,8 @@ spec:
     spec:
       hostNetwork: true
       dnsPolicy: Default
+      nodeSelector:
+        vcluster.loft.sh/node-provider: ${node_provider_name}
       serviceAccountName: cloud-controller-manager
       priorityClassName: system-cluster-critical
       tolerations:
