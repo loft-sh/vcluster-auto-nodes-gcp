@@ -131,6 +131,9 @@ spec:
           effect: NoSchedule
         - key: karpenter.sh/unregistered
           effect: NoExecute
+        - key: "vcluster.com/cleanup"
+          operator: "Exists"
+          effect: "NoExecute"
       containers:
         - name: cloud-controller-manager
           imagePullPolicy: IfNotPresent
