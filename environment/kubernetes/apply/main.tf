@@ -22,5 +22,22 @@ resource "kubernetes_manifest" "apply" {
     force_conflicts = true
   }
 
-  computed_fields = var.computed_fields
+  computed_fields = concat([
+    "metadata.annotations",
+    "metadata.labels",
+    "metadata.clusterName",
+    "metadata.creationTimestamp",
+    "metadata.deletionGracePeriodSeconds",
+    "metadata.deletionTimestamp",
+    "metadata.finalizers",
+    "metadata.generateName",
+    "metadata.generation",
+    "metadata.managedFields",
+    "metadata.ownerReferences",
+    "metadata.resourceVersion",
+    "metadata.uid",
+    "status",
+  ],
+  var.computed_fields,
+  )
 }

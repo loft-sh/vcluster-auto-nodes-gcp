@@ -32,6 +32,8 @@ module "private_instance" {
   labels = {
     vcluster  = local.vcluster_name
     namespace = local.vcluster_namespace
+
+    # the same as the value set in CCM’s --cluster-name flag
     cluster-name = local.vcluster_name
   }
 }
