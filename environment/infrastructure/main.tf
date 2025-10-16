@@ -10,16 +10,18 @@ module "validation" {
   region  = nonsensitive(var.vcluster.properties["region"])
 }
 
-resource "random_id" "vpc_suffix" {
+resource "random_id" "suffix" {
   byte_length = 4
 }
 
 module "vpc" {
+  for_each = { (local.project_region_key) = true }
+
   source  = "terraform-google-modules/network/google"
   version = "~> 11.1"
 
   project_id   = local.project
-  network_name = local.vpc_name
+  network_name = local.vcluster_unique_name
 
   subnets = [
     {
@@ -37,16 +39,17 @@ module "vpc" {
   ]
 }
 
-
 module "cloud_nat" {
+  for_each = { (local.project_region_key) = true }
+
   source  = "terraform-google-modules/cloud-nat/google"
   version = "~> 5.0"
 
   project_id                         = local.project
   region                             = local.region
-  name                               = local.nat_name
-  router                             = local.nat_router_name
+  name                               = format("%s-nat", local.vcluster_unique_name)
+  router                             = format("%s-router", local.vcluster_unique_name)
   create_router                      = true
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-  network                            = module.vpc.network_self_link
+  network                            = module.vpc[local.project_region_key].network_self_link
 }

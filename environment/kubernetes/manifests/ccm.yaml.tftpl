@@ -2,17 +2,17 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cloud-controller-manager
+  name: ${node_provider_name}-cloud-controller-manager
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: cloud-controller-manager
+    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:cloud-controller-manager
+  name: system:${node_provider_name}-cloud-controller-manager
   labels:
-    app.kubernetes.io/name: cloud-controller-manager
+    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
 rules:
   - apiGroups: [""]
     resources: ["events"]
@@ -51,38 +51,38 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cloud-controller-manager:apiserver-authentication-reader
+  name: ${node_provider_name}-cloud-controller-manager:apiserver-authentication-reader
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: cloud-controller-manager
+    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: extension-apiserver-authentication-reader
 subjects:
   - kind: ServiceAccount
-    name: cloud-controller-manager
+    name: ${node_provider_name}-cloud-controller-manager
     namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:cloud-controller-manager
+  name: system:${node_provider_name}-cloud-controller-manager
   labels:
-    app.kubernetes.io/name: cloud-controller-manager
+    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: system:cloud-controller-manager
+  name: system:${node_provider_name}-cloud-controller-manager
 subjects:
   - kind: ServiceAccount
-    name: cloud-controller-manager
+    name: ${node_provider_name}-cloud-controller-manager
     namespace: kube-system
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gcp-cloud-config
+  name: ${node_provider_name}-cloud-config
   namespace: kube-system
 data:
   cloud-config: |
@@ -94,26 +94,26 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-controller-manager
+  name: ${node_provider_name}-cloud-controller-manager
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: cloud-controller-manager
+    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: cloud-controller-manager
+      app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: cloud-controller-manager
+        app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
         tier: control-plane
     spec:
       hostNetwork: true
       dnsPolicy: Default
       nodeSelector:
         vcluster.loft.sh/node-provider: ${node_provider_name}
-      serviceAccountName: cloud-controller-manager
+      serviceAccountName: ${node_provider_name}-cloud-controller-manager
       priorityClassName: system-cluster-critical
       tolerations:
         - key: node.cloudprovider.kubernetes.io/uninitialized
@@ -143,12 +143,13 @@ spec:
           args:
             - --v=2
             - --cloud-provider=gce
-            - --use-service-account-credentials=false
+            - --use-service-account-credentials=true
             - --configure-cloud-routes=false
-            - --controllers=*,-node-ipam-controller
+            - --controllers=${controllers}
             - --leader-elect-resource-lock=leases
             - --cluster-name=${vcluster_name}
             - --cloud-config=/etc/kubernetes/cloud-config
+            - --leader-elect-resource-name=${node_provider_name}-cloud-controller-manager
           livenessProbe:
             httpGet:
               scheme: HTTPS
@@ -168,7 +169,7 @@ spec:
       volumes:
         - name: cloud-config
           configMap:
-            name: gcp-cloud-config
+            name: ${node_provider_name}-cloud-config
             items:
               - key: cloud-config
                 path: cloud-config

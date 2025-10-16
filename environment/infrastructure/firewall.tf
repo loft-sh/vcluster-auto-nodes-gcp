@@ -60,8 +60,8 @@ resource "google_compute_firewall" "rules" {
   for_each = local.firewall_rules
 
   project     = local.project
-  name        = "${local.vpc_name}-${each.key}"
-  network     = module.vpc.network_self_link
+  name        = format("%s-%s", local.vcluster_unique_name, each.key)
+  network     = module.vpc[local.project_region_key].network_self_link
   description = each.value.description
   direction   = each.value.direction
 
@@ -75,6 +75,4 @@ resource "google_compute_firewall" "rules" {
       ports    = length(allow.value.ports) > 0 ? allow.value.ports : null
     }
   }
-
-  depends_on = [module.vpc]
 }

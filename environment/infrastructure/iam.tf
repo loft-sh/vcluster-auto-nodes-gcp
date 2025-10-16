@@ -1,32 +1,33 @@
-############
-# CCM / CSI
-############
-
-resource "google_service_account" "ccm_csi" {
+resource "google_service_account" "vcluster_node" {
   project      = local.project
-  account_id   = format("%s-ccm-csi", local.vcluster_name)
-  display_name = format("CCM/CSI role for %s", local.vcluster_name)
+  account_id   = format("%s-node", local.vcluster_unique_name)
+  display_name = format("vCluster node role for %s", local.vcluster_unique_name)
   description  = "Used by Kubernetes nodes (IMDS tokens) for CCM/CSI"
 }
 
-resource "google_project_iam_member" "ccm_csi" {
-  for_each = toset([
+###################
+# CCM
+###################
+
+resource "google_project_iam_member" "ccm_roles" {
+  for_each = local.ccm_enabled ? toset([
     "roles/compute.viewer",
     "roles/compute.loadBalancerAdmin",
     "roles/compute.instanceAdmin.v1",
-    "roles/compute.storageAdmin",
-    "roles/iam.serviceAccountUser"
-  ])
+    "roles/iam.serviceAccountUser",
+  ]) : toset([])
 
   project = local.project
   role    = each.value
-  member  = "serviceAccount:${google_service_account.ccm_csi.email}"
+  member  = "serviceAccount:${google_service_account.vcluster_node.email}"
 }
 
 resource "google_project_iam_custom_role" "ccm_firewall_min" {
+  for_each = local.ccm_enabled ? { enabled = true } : {}
+
   project     = local.project
-  role_id     = replace(format("%s-ccm-firewall-min", local.vcluster_name), "-", "_")
-  title       = format("%s CCM Firewall Minimal", local.vcluster_name)
+  role_id     = replace(format("%s-ccm-firewall-min", local.vcluster_unique_name), "-", "_")
+  title       = format("%s CCM firewall minimal", local.vcluster_unique_name)
   description = "Minimal VPC firewall permissions for cloud-provider-gcp"
   permissions = [
     "compute.firewalls.create",
@@ -34,12 +35,30 @@ resource "google_project_iam_custom_role" "ccm_firewall_min" {
     "compute.firewalls.get",
     "compute.firewalls.list",
     "compute.firewalls.update",
-    "compute.networks.updatePolicy"
+    "compute.networks.updatePolicy",
   ]
 }
 
-resource "google_project_iam_member" "ccm_firewall_min" {
+resource "google_project_iam_member" "ccm_firewall_binding" {
+  for_each = local.ccm_enabled ? { enabled = true } : {}
+
   project = local.project
-  role    = google_project_iam_custom_role.ccm_firewall_min.id
-  member  = "serviceAccount:${google_service_account.ccm_csi.email}"
+  role    = google_project_iam_custom_role.ccm_firewall_min[each.key].name
+  member  = "serviceAccount:${google_service_account.vcluster_node.email}"
+}
+
+###################
+# CSI
+###################
+
+resource "google_project_iam_member" "csi_roles" {
+  for_each = local.csi_enabled ? toset([
+    "roles/compute.viewer",
+    "roles/compute.storageAdmin",
+    "roles/iam.serviceAccountUser",
+  ]) : toset([])
+
+  project = local.project
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.vcluster_node.email}"
 }
