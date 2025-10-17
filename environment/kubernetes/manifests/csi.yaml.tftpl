@@ -529,6 +529,10 @@ spec:
         vcluster.loft.sh/node-provider: ${node_provider_name}
       priorityClassName: ${node_provider_name}-csi-gce-pd-controller
       serviceAccountName: ${node_provider_name}-csi-gce-pd-controller-sa
+      tolerations:
+      - key: "vcluster.com/cleanup"
+        operator: "Exists"
+        effect: "NoExecute"
       volumes:
       - emptyDir: {}
         name: socket-dir
