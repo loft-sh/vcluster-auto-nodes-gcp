@@ -14,6 +14,12 @@ resource "random_id" "suffix" {
   byte_length = 4
 }
 
+data "google_compute_zones" "available" {
+  project = local.project
+  region  = local.region
+  status  = "UP"
+}
+
 module "vpc" {
   for_each = { (local.project_region_key) = true }
 
