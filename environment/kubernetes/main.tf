@@ -32,5 +32,6 @@ module "kubernetes_apply_csi" {
 
   template_vars = {
     node_provider_name = local.node_provider_name
+    availability_zones = jsonencode(local.availability_zones)
   }
 }
