@@ -1,27 +1,27 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-controller-sa
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-controller-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-node-sa
-  namespace: kube-system
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: ${node_provider_name}-csi-gce-pd-node-sa-win
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-node-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
   labels:
-    k8s-app: ${node_provider_name}-compute-persistent-disk-csi-driver
-  name: ${node_provider_name}-csi-gce-pd-leaderelection-role
+    k8s-app: gcp-compute-persistent-disk-csi-driver-${suffix}
+  name: csi-gce-pd-leaderelection-role-${suffix}
   namespace: kube-system
 rules:
 - apiGroups:
@@ -39,7 +39,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-attacher-role
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-attacher-role-${suffix}
 rules:
 - apiGroups:
   - ""
@@ -87,7 +89,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-node-deploy
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-node-deploy-${suffix}
 rules:
 - apiGroups:
   - ""
@@ -100,7 +104,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-provisioner-role
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-provisioner-role-${suffix}
 rules:
 - apiGroups:
   - ""
@@ -189,7 +195,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-resizer-role
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-resizer-role-${suffix}
 rules:
 - apiGroups:
   - ""
@@ -246,7 +254,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-snapshotter-role
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-snapshotter-role-${suffix}
 rules:
 - apiGroups:
   - ""
@@ -289,91 +299,104 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
   labels:
-    k8s-app: ${node_provider_name}-compute-persistent-disk-csi-driver
-  name: ${node_provider_name}-csi-gce-pd-controller-leaderelection-binding
+    k8s-app: gcp-compute-persistent-disk-csi-driver-${suffix}
+  name: csi-gce-pd-controller-leaderelection-binding-${suffix}
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: ${node_provider_name}-csi-gce-pd-leaderelection-role
+  name: csi-gce-pd-leaderelection-role-${suffix}
 subjects:
 - kind: ServiceAccount
-  name: ${node_provider_name}-csi-gce-pd-controller-sa
+  name: csi-gce-pd-controller-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-controller-attacher-binding
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-controller-attacher-binding-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ${node_provider_name}-csi-gce-pd-attacher-role
+  name: csi-gce-pd-attacher-role-${suffix}
 subjects:
 - kind: ServiceAccount
-  name: ${node_provider_name}-csi-gce-pd-controller-sa
+  name: csi-gce-pd-controller-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-controller-provisioner-binding
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-controller-provisioner-binding-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ${node_provider_name}-csi-gce-pd-provisioner-role
+  name: csi-gce-pd-provisioner-role-${suffix}
 subjects:
 - kind: ServiceAccount
-  name: ${node_provider_name}-csi-gce-pd-controller-sa
+  name: csi-gce-pd-controller-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-controller-snapshotter-binding
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-controller-snapshotter-binding-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ${node_provider_name}-csi-gce-pd-snapshotter-role
+  name: csi-gce-pd-snapshotter-role-${suffix}
 subjects:
 - kind: ServiceAccount
-  name: ${node_provider_name}-csi-gce-pd-controller-sa
+  name: csi-gce-pd-controller-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-node
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-node-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ${node_provider_name}-csi-gce-pd-node-deploy
+  name: csi-gce-pd-node-deploy-${suffix}
 subjects:
 - kind: ServiceAccount
-  name: ${node_provider_name}-csi-gce-pd-node-sa
+  name: csi-gce-pd-node-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-resizer-binding
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-resizer-binding-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ${node_provider_name}-csi-gce-pd-resizer-role
+  name: csi-gce-pd-resizer-role-${suffix}
 subjects:
 - kind: ServiceAccount
-  name: ${node_provider_name}-csi-gce-pd-controller-sa
+  name: csi-gce-pd-controller-sa-${suffix}
   namespace: kube-system
 ---
 apiVersion: scheduling.k8s.io/v1
-description: This priority class should be used for the GCE PD CSI driver controller
-  deployment only.
+description: This priority class should be used for the GCE PD CSI driver controller deployment only.
 globalDefault: false
 kind: PriorityClass
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-controller
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-controller-${suffix}
 value: 900000000
 ---
 apiVersion: scheduling.k8s.io/v1
@@ -381,23 +404,27 @@ description: This priority class should be used for the GCE PD CSI driver node d
 globalDefault: false
 kind: PriorityClass
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-node
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-node-${suffix}
 value: 900001000
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-controller
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-controller-${suffix}
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ${node_provider_name}-compute-persistent-disk-csi-driver
+      app: gcp-compute-persistent-disk-csi-driver-${suffix}
   template:
     metadata:
       labels:
-        app: ${node_provider_name}-compute-persistent-disk-csi-driver
+        app: gcp-compute-persistent-disk-csi-driver-${suffix}
     spec:
       containers:
       - args:
@@ -527,8 +554,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         vcluster.loft.sh/node-provider: ${node_provider_name}
-      priorityClassName: ${node_provider_name}-csi-gce-pd-controller
-      serviceAccountName: ${node_provider_name}-csi-gce-pd-controller-sa
+      priorityClassName: csi-gce-pd-controller-${suffix}
+      serviceAccountName: csi-gce-pd-controller-sa-${suffix}
       tolerations:
       - key: "vcluster.com/cleanup"
         operator: "Exists"
@@ -540,16 +567,18 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: ${node_provider_name}-csi-gce-pd-node
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: csi-gce-pd-node-${suffix}
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      app: ${node_provider_name}-compute-persistent-disk-csi-driver
+      app: gcp-compute-persistent-disk-csi-driver-${suffix}
   template:
     metadata:
       labels:
-        app: ${node_provider_name}-compute-persistent-disk-csi-driver
+        app: gcp-compute-persistent-disk-csi-driver-${suffix}
     spec:
       containers:
       - args:
@@ -604,8 +633,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         vcluster.loft.sh/node-provider: ${node_provider_name}
-      priorityClassName: ${node_provider_name}-csi-gce-pd-node
-      serviceAccountName: ${node_provider_name}-csi-gce-pd-node-sa
+      priorityClassName: csi-gce-pd-node-${suffix}
+      serviceAccountName: csi-gce-pd-node-sa-${suffix}
       tolerations:
       - operator: Exists
       volumes:
@@ -649,6 +678,8 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
   name: pd.csi.storage.gke.io
 spec:
   attachRequired: true
@@ -658,7 +689,9 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: ${node_provider_name}-csi-gce-pd
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: ${node_provider_name}-disk-default
 provisioner: pd.csi.storage.gke.io
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
