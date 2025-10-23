@@ -1,8 +1,8 @@
 resource "google_service_account" "vcluster_node" {
   project      = local.project
-  account_id   = format("%s-node", local.vcluster_unique_name)
-  display_name = format("vCluster node role for %s", local.vcluster_unique_name)
-  description  = "Used by Kubernetes nodes (IMDS tokens) for CCM/CSI"
+  account_id   = format("vcluster-node-sa-%s", local.random_id)
+  display_name = format("Node service account for %s", local.vcluster_name)
+  description  = format("Needed by Kubernetes nodes to obtain IMDS tokens for CCM/CSI, used by %s", local.vcluster_name)
 }
 
 ###################
@@ -26,9 +26,9 @@ resource "google_project_iam_custom_role" "ccm_firewall_min" {
   for_each = local.ccm_enabled ? { enabled = true } : {}
 
   project     = local.project
-  role_id     = replace(format("%s-ccm-firewall-min", local.vcluster_unique_name), "-", "_")
-  title       = format("%s CCM firewall minimal", local.vcluster_unique_name)
-  description = "Minimal VPC firewall permissions for cloud-provider-gcp"
+  role_id     = replace(format("ccm-firewall-%s", local.random_id), "-", "_")
+  title       = format("CCM firewall for %s", local.vcluster_name)
+  description = format("Minimal VPC firewall permissions for CCM, used by %s", local.vcluster_name)
   permissions = [
     "compute.firewalls.create",
     "compute.firewalls.delete",

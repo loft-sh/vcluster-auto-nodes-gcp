@@ -9,6 +9,7 @@ module "kubernetes_apply_ccm" {
 
   manifest_file = "${path.module}/manifests/ccm.yaml.tftpl"
   template_vars = {
+    suffix             = local.suffix
     network_name       = local.network_name
     subnet_name        = local.subnet_name
     vcluster_name      = local.vcluster_name
@@ -31,6 +32,7 @@ module "kubernetes_apply_csi" {
   computed_fields = ["globalDefault"]
 
   template_vars = {
+    suffix             = local.suffix
     node_provider_name = local.node_provider_name
     availability_zones = jsonencode(local.availability_zones)
   }

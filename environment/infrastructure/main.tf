@@ -27,7 +27,8 @@ module "vpc" {
   version = "~> 11.1"
 
   project_id   = local.project
-  network_name = local.vcluster_unique_name
+  network_name = format("vcluster-network-%s", local.random_id)
+  description  = format("Network for %s", local.vcluster_name)
 
   subnets = [
     {
@@ -53,8 +54,8 @@ module "cloud_nat" {
 
   project_id                         = local.project
   region                             = local.region
-  name                               = format("%s-nat", local.vcluster_unique_name)
-  router                             = format("%s-router", local.vcluster_unique_name)
+  name                               = format("vcluster-nat-%s", local.random_id)
+  router                             = format("vcluster-router-%s", local.random_id)
   create_router                      = true
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   network                            = module.vpc[local.project_region_key].network_self_link

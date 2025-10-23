@@ -2,17 +2,21 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${node_provider_name}-cloud-controller-manager
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: gcp-cloud-controller-manager-${suffix}
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+    app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:${node_provider_name}-cloud-controller-manager
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: gcp-cloud-controller-manager-${suffix}
   labels:
-    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+    app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
 rules:
   - apiGroups: [""]
     resources: ["events"]
@@ -51,38 +55,44 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: ${node_provider_name}-cloud-controller-manager:apiserver-authentication-reader
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: gcp-cloud-controller-manager-${suffix}-api-auth
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+    app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: extension-apiserver-authentication-reader
 subjects:
   - kind: ServiceAccount
-    name: ${node_provider_name}-cloud-controller-manager
+    name: gcp-cloud-controller-manager-${suffix}
     namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:${node_provider_name}-cloud-controller-manager
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: gcp-cloud-controller-manager-${suffix}
   labels:
-    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+    app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: system:${node_provider_name}-cloud-controller-manager
+  name: gcp-cloud-controller-manager-${suffix}
 subjects:
   - kind: ServiceAccount
-    name: ${node_provider_name}-cloud-controller-manager
+    name: gcp-cloud-controller-manager-${suffix}
     namespace: kube-system
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ${node_provider_name}-cloud-config
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: gcp-cloud-config-${suffix}
   namespace: kube-system
 data:
   cloud-config: |
@@ -94,26 +104,28 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${node_provider_name}-cloud-controller-manager
+  annotations:
+    vcluster.loft.sh/node-provider: ${node_provider_name}
+  name: gcp-cloud-controller-manager-${suffix}
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+    app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+      app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: ${node_provider_name}-cloud-controller-manager
+        app.kubernetes.io/name: gcp-cloud-controller-manager-${suffix}
         tier: control-plane
     spec:
       hostNetwork: true
       dnsPolicy: Default
       nodeSelector:
         vcluster.loft.sh/node-provider: ${node_provider_name}
-      serviceAccountName: ${node_provider_name}-cloud-controller-manager
+      serviceAccountName: gcp-cloud-controller-manager-${suffix}
       priorityClassName: system-cluster-critical
       tolerations:
         - key: node.cloudprovider.kubernetes.io/uninitialized
@@ -149,7 +161,7 @@ spec:
             - --leader-elect-resource-lock=leases
             - --cluster-name=${vcluster_name}
             - --cloud-config=/etc/kubernetes/cloud-config
-            - --leader-elect-resource-name=${node_provider_name}-cloud-controller-manager
+            - --leader-elect-resource-name=gcp-cloud-controller-manager-${suffix}
           livenessProbe:
             httpGet:
               scheme: HTTPS
@@ -169,7 +181,7 @@ spec:
       volumes:
         - name: cloud-config
           configMap:
-            name: ${node_provider_name}-cloud-config
+            name: gcp-cloud-config-${suffix}
             items:
               - key: cloud-config
                 path: cloud-config
