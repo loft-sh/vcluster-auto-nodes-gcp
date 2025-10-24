@@ -24,7 +24,7 @@ module "vpc" {
   for_each = { (local.project_region_key) = true }
 
   source  = "terraform-google-modules/network/google"
-  version = "~> 11.1"
+  version = "~> 12.0.0"
 
   project_id   = local.project
   network_name = format("vcluster-network-%s", local.random_id)
@@ -50,7 +50,7 @@ module "cloud_nat" {
   for_each = { (local.project_region_key) = true }
 
   source  = "terraform-google-modules/cloud-nat/google"
-  version = "~> 5.0"
+  version = "~> 5.4.0"
 
   project_id                         = local.project
   region                             = local.region

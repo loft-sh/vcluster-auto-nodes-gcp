@@ -17,7 +17,7 @@ resource "random_id" "vm_suffix" {
 
 module "private_instance" {
   source  = "terraform-google-modules/vm/google//modules/compute_instance"
-  version = "~> 13.0"
+  version = "~> 13.6.0"
 
   region            = local.region
   zone              = local.zone == "" ? null : local.zone
@@ -49,7 +49,7 @@ data "google_compute_image" "img" {
 
 module "instance_template" {
   source  = "terraform-google-modules/vm/google//modules/instance_template"
-  version = "~> 13.0"
+  version = "~> 13.6.0"
 
   region             = local.region
   project_id         = local.project
