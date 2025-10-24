@@ -142,6 +142,7 @@ spec:
           operator: Exists
           effect: NoSchedule
         - key: karpenter.sh/unregistered
+          operator: "Exists"
           effect: NoExecute
         - key: "vcluster.com/cleanup"
           operator: "Exists"
