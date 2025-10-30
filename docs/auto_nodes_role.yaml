@@ -44,12 +44,27 @@ includedPermissions:
   - compute.images.get
   - compute.images.list
 
+  # IAM
+  - iam.serviceAccounts.actAs
+  - iam.serviceAccounts.get
+  - iam.serviceAccounts.list
+  - iam.serviceAccounts.create
+  - iam.serviceAccounts.delete
+  - iam.serviceAccounts.update
+  - iam.serviceAccounts.getIamPolicy
+  - iam.serviceAccounts.setIamPolicy
+  - iam.roles.get
+  - iam.roles.list
+  - iam.roles.create
+  - iam.roles.delete
+  - iam.roles.update
+  - resourcemanager.projects.getIamPolicy
+  - resourcemanager.projects.setIamPolicy
+
   # General
   - compute.regions.get
   - compute.regions.list
   - compute.zones.get
   - compute.zones.list
   - resourcemanager.projects.get
-  - iam.serviceAccounts.actAs
-  - iam.serviceAccounts.get
   - compute.projects.get

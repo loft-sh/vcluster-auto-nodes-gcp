@@ -5,12 +5,20 @@ metadata:
 spec:
   terraform:
     nodeEnvironmentTemplate:
-      git:
-        repository: https://github.com/loft-sh/vcluster-auto-nodes-gcp.git
-        subPath: environment
+      infrastructure:
+        git:
+          repository: https://github.com/loft-sh/vcluster-auto-nodes-gcp.git
+          tag: v0.1.0
+          subPath: environment/infrastructure
+      kubernetes:
+        git:
+          repository: https://github.com/loft-sh/vcluster-auto-nodes-gcp.git
+          tag: v0.1.0
+          subPath: environment/kubernetes
     nodeTemplate:
       git:
         repository: https://github.com/loft-sh/vcluster-auto-nodes-gcp.git
+        tag: v0.1.0
         subPath: node
     nodeTypes:
     - name: e2-small
