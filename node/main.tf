@@ -73,7 +73,7 @@ module "instance_template" {
   }
 
   metadata = {
-    user-data = var.vcluster.userData
+    user-data = var.vcluster.userData != "" ? var.vcluster.userData : null
   }
 
   startup_script = "#!/bin/bash\n# Ensure cloud-init runs\ncloud-init status --wait || true"
