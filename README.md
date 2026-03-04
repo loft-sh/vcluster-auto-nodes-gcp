@@ -189,6 +189,59 @@ privateNodes:
         values: ["e2-medium", "e2-standard-2", "e2-standard-4"]
 ```
 
+## GPU support
+
+Auto Nodes supports GPU-accelerated instances on GCP. There are two GPU provisioning paths depending on the machine family:
+
+### N1 + attached GPU (e.g. Tesla T4)
+
+N1 machines require an explicit `gpu-type` and `gpu-count` in the node type properties. The instance template attaches the GPU as a guest accelerator.
+
+```yaml
+privateNodes:
+  enabled: true
+  autoNodes:
+  - provider: gcp-compute
+    dynamic:
+    - name: gcp-gpu-t4
+      nodeTypeSelector:
+      - property: instance-type
+        operator: In
+        values: ["n1-standard-4"]
+      - property: gpu-type
+        operator: In
+        values: ["nvidia-tesla-t4"]
+```
+
+### G2/A2/A3 with built-in GPU (e.g. L4, A100, H100)
+
+These machine families have GPUs built in -- no `gpu-type` property is needed. The module detects the machine family and automatically uses a Deep Learning VM image with pre-installed NVIDIA drivers.
+
+```yaml
+privateNodes:
+  enabled: true
+  autoNodes:
+  - provider: gcp-compute
+    dynamic:
+    - name: gcp-gpu-l4
+      nodeTypeSelector:
+      - property: instance-type
+        operator: In
+        values: ["g2-standard-4"]
+```
+
+### GPU node type properties
+
+| Property        | Required | Default | Description                                                  |
+| --------------- | -------- | ------- | ------------------------------------------------------------ |
+| `gpu-type`      | No       | `""`    | GCP accelerator type (e.g. `nvidia-tesla-t4`). Only for N1.  |
+| `gpu-count`     | No       | `1`     | Number of GPUs to attach. Only used when `gpu-type` is set.  |
+| `disk-size`     | No       | `100`   | Boot disk size in GB. GPU workloads typically need 200+.     |
+
+### GPU nodes
+
+GPU nodes use a Deep Learning VM image with pre-installed NVIDIA drivers, so no separate driver installation is needed. Users are responsible for deploying their own GPU device plugin or GPU operator (e.g. NVIDIA GPU Operator) inside their vCluster to expose `nvidia.com/gpu` resources to the Kubernetes scheduler.
+
 ## Security considerations
 
 > **_NOTE:_** When deploying [Cloud Controller Manager (CCM)](https://kubernetes.io/docs/concepts/architecture/cloud-controller/) and [Container Storage Interface (CSI)](https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/) with Auto Nodes, permissions are granted through user assigned managed identity.

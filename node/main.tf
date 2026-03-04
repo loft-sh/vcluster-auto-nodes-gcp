@@ -33,7 +33,7 @@ module "private_instance" {
     vcluster  = local.vcluster_name
     namespace = local.vcluster_namespace
 
-    # the same as the value set in CCM’s --cluster-name flag
+    # the same as the value set in CCM's --cluster-name flag
     cluster-name = local.vcluster_name
   }
 }
@@ -42,9 +42,22 @@ data "google_project" "project" {
   project_id = local.project
 }
 
-data "google_compute_image" "img" {
+# CPU nodes use Ubuntu 24.04 LTS
+data "google_compute_image" "cpu" {
+  count   = local.is_gpu_node ? 0 : 1
   family  = "ubuntu-2404-lts-amd64"
   project = "ubuntu-os-cloud"
+}
+
+# GPU nodes use Deep Learning VM with pre-installed NVIDIA drivers
+data "google_compute_image" "gpu" {
+  count   = local.is_gpu_node ? 1 : 0
+  family  = "common-cu128-ubuntu-2404-nvidia-570"
+  project = "deeplearning-platform-release"
+}
+
+locals {
+  image = local.is_gpu_node ? data.google_compute_image.gpu[0] : data.google_compute_image.cpu[0]
 }
 
 module "instance_template" {
@@ -60,12 +73,15 @@ module "instance_template" {
 
   machine_type = local.instance_type
 
-  source_image         = data.google_compute_image.img.self_link
-  source_image_family  = data.google_compute_image.img.family
-  source_image_project = data.google_compute_image.img.project
+  source_image         = local.image.self_link
+  source_image_family  = local.image.family
+  source_image_project = local.image.project
 
-  disk_size_gb = 100
+  disk_size_gb = local.disk_size
   disk_type    = "pd-standard"
+
+  gpu                 = local.gpu_config
+  on_host_maintenance = local.on_host_maintenance
 
   service_account = {
     email  = local.service_account_email
