@@ -29,13 +29,13 @@ module "private_instance" {
   # Will use NAT
   access_config = []
 
-  labels = {
-    vcluster  = local.vcluster_name
-    namespace = local.vcluster_namespace
+  labels = var.vcluster.instance != null ? {
+    vcluster  = nonsensitive(var.vcluster.instance.metadata.name)
+    namespace = nonsensitive(var.vcluster.instance.metadata.namespace)
 
     # the same as the value set in CCM’s --cluster-name flag
-    cluster-name = local.vcluster_name
-  }
+    cluster-name = nonsensitive(var.vcluster.instance.metadata.name)
+  } : {}
 }
 
 data "google_project" "project" {
@@ -56,7 +56,7 @@ module "instance_template" {
   network            = local.network_name
   subnetwork         = local.subnet_name
   subnetwork_project = local.project
-  tags               = ["allow-iap-ssh", local.vcluster_name] # for IAP SSH access
+  tags               = var.vcluster.instance != null ? ["allow-iap-ssh", nonsensitive(var.vcluster.instance.metadata.name)] : ["allow-iap-ssh"] # for IAP SSH access
 
   machine_type = local.instance_type
 
