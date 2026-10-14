@@ -34,7 +34,7 @@ module "private_instance" {
     namespace = local.vcluster_namespace
 
     # the same as the value set in CCM’s --cluster-name flag
-    cluster-name = local.vcluster_name
+    cluster-name = local.cluster_id
   }
 }
 
@@ -56,7 +56,7 @@ module "instance_template" {
   network            = local.network_name
   subnetwork         = local.subnet_name
   subnetwork_project = local.project
-  tags               = ["allow-iap-ssh", local.vcluster_name] # for IAP SSH access
+  tags               = ["allow-iap-ssh", local.cluster_id] # for IAP SSH access
 
   machine_type = local.instance_type
 

@@ -33,13 +33,22 @@ These modules dynamically create Compute Engine instances as vCluster Private No
 - **Cost optimization** – Provision only the resources you actually need  
 - **Simple configuration** – Define node requirements directly in your `vcluster.yaml`  
 
-By default, this quickstart **NodeProvider** isolates each vCluster into its own VPC.
+Shared infrastructure is provisioned once per **NetworkEnvironment** and reused by every vCluster that runs on it.
+
+## Compatibility
+
+| Provider version | vCluster Platform | Infrastructure model |
+| ---------------- | ----------------- | -------------------- |
+| `v0.2.x`         | `>= 4.13.0-alpha.0` | Shared, cluster-scoped `NetworkEnvironment` |
+| `v0.1.x`         | `< 4.13.0`        | Per-vCluster `NodeEnvironment` |
+
+There is no supported migration of existing `NodeEnvironment` infrastructure to a `NetworkEnvironment`. Upgrading from `v0.1.x` requires Platform 4.13 and new NetworkEnvironment infrastructure.
 
 ---
 
-## Resources Created Per Virtual Cluster
+## Resources Created
 
-### [Infrastructure](./environment/infrastructure)
+### [Infrastructure](./environment/infrastructure) (per NetworkEnvironment)
 
 - A dedicated VPC  
 - Public subnets in two zones  
@@ -47,18 +56,18 @@ By default, this quickstart **NodeProvider** isolates each vCluster into its own
 - A Cloud NAT for private subnets  
 - Firewall rules for worker nodes  
 - A service account for worker nodes  
-  - Permissions depend on whether CCM and CSI are enabled  
+  - Permissions depend on whether CCM and CSI are enabled (both disabled by default)  
 
-### [Kubernetes](./environment/kubernetes)
+Shared resources are named and described after the NetworkEnvironment.
 
-- Cloud Controller Manager for node initialization and automatic LoadBalancer creation  
-- GCP Persistent Disk CSI driver with a default storage class  
-  - The default storage class does **not** enforce allowed topologies (important in multi-cloud setups). You can provide your own.  
-
-### [Nodes](./node/)
+### [Nodes](./node/) (per vCluster)
 
 - Compute Engine instances using the selected `machine-type`, attached to private subnets  
   - If no default zone is set and `privateNodes.autoNodes[*].nodeTypeSelector` does not contain a `zone`, nodes may be spread across available zones in the selected region.  
+- Labeled with `vcluster` and `namespace` of the owning vCluster, and `cluster-name=<cluster-id>`  
+- Tagged with the `<cluster-id>` network tag  
+
+The cluster ID is `<vcluster-name, first 40 characters>-<first 8 hex characters of md5("<vcluster-namespace>/<vcluster-name>")>`, because vCluster names are only unique within a namespace. If you deploy a Cloud Controller Manager, set its `--cluster-name` to this cluster ID.
 
 ## Getting started
 
@@ -161,9 +170,8 @@ You can configure the **NodeProvider** with the following options:
 
 | Option                        | Default       | Description                                                                                 |
 | ----------------------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| `vcluster.com/ccm-enabled`    | `true`        | Enables deployment of the Cloud Controller Manager.                                         |
-| `vcluster.com/ccm-lb-enabled` | `true`        | Enables the CCM service controller. If disabled, CCM will not create LoadBalancer services. |
-| `vcluster.com/csi-enabled`    | `true`        | Enables deployment of the CSI driver with a `<provider>-default-disk` storage class.                 |
+| `vcluster.com/ccm-enabled`    | `false`       | Grants the worker node service account the permissions required by the GCP Cloud Controller Manager. |
+| `vcluster.com/csi-enabled`    | `false`       | Grants the worker node service account the permissions required by the GCP Persistent Disk CSI driver. |
 | `vcluster.com/vpc-cidr`       | `10.10.0.0/16` | Sets the VPC CIDR range. Useful in multi-cloud scenarios to avoid CIDR conflicts.           |
 
 ## Example
@@ -178,8 +186,7 @@ privateNodes:
   autoNodes:
   - provider: gcp-compute
     properties:
-      vcluster.com/ccm-lb-enabled: "false"
-      vcluster.com/csi-enabled: "false"
+      vcluster.com/csi-enabled: "true"
       vcluster.com/vpc-cidr: "10.20.0.0/16"
     dynamic:
     - name: gcp-cpu-nodes
@@ -199,7 +206,7 @@ Refer to the full [list of permissions](environment/infrastructure/iam.tf) for d
 Cluster administrators should be aware of the following:
 
 - **Shared permissions** – all pods running in a **host network** may gain the same access level as CCM and CSI.  
-- **Mitigation** – cluster administrators can disable CCM and CSI deployments.  
+- **Mitigation** – CCM and CSI permissions are disabled by default. Enable them only when needed via `vcluster.com/ccm-enabled` and `vcluster.com/csi-enabled`.  
   In that case, virtual machines will not be granted additional permissions.  
   However, responsibility for deploying and securely configuring CCM and CSI will then fall to the cluster administrator.  
 
