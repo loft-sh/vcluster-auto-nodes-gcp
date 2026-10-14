@@ -56,7 +56,7 @@ There is no supported migration of existing `NodeEnvironment` infrastructure to 
 - A Cloud NAT for private subnets  
 - Firewall rules for worker nodes  
 - A service account for worker nodes  
-  - Permissions depend on whether CCM and CSI are enabled  
+  - Permissions depend on whether CCM and CSI are enabled (both disabled by default)  
 
 Shared resources are named and described after the NetworkEnvironment.
 
@@ -64,7 +64,10 @@ Shared resources are named and described after the NetworkEnvironment.
 
 - Compute Engine instances using the selected `machine-type`, attached to private subnets  
   - If no default zone is set and `privateNodes.autoNodes[*].nodeTypeSelector` does not contain a `zone`, nodes may be spread across available zones in the selected region.  
-- Labeled with `vcluster`, `namespace` and `cluster-name` of the owning vCluster  
+- Labeled with `vcluster` and `namespace` of the owning vCluster, and `cluster-name=<cluster-id>`  
+- Tagged with the `<cluster-id>` network tag  
+
+The cluster ID is `<vcluster-name, first 40 characters>-<first 8 hex characters of md5("<vcluster-namespace>/<vcluster-name>")>`, because vCluster names are only unique within a namespace. If you deploy a Cloud Controller Manager, set its `--cluster-name` to this cluster ID.
 
 ## Getting started
 
@@ -167,8 +170,8 @@ You can configure the **NodeProvider** with the following options:
 
 | Option                        | Default       | Description                                                                                 |
 | ----------------------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| `vcluster.com/ccm-enabled`    | `true`        | Grants the worker node service account the permissions required by the GCP Cloud Controller Manager. |
-| `vcluster.com/csi-enabled`    | `true`        | Grants the worker node service account the permissions required by the GCP Persistent Disk CSI driver. |
+| `vcluster.com/ccm-enabled`    | `false`       | Grants the worker node service account the permissions required by the GCP Cloud Controller Manager. |
+| `vcluster.com/csi-enabled`    | `false`       | Grants the worker node service account the permissions required by the GCP Persistent Disk CSI driver. |
 | `vcluster.com/vpc-cidr`       | `10.10.0.0/16` | Sets the VPC CIDR range. Useful in multi-cloud scenarios to avoid CIDR conflicts.           |
 
 ## Example
@@ -183,7 +186,7 @@ privateNodes:
   autoNodes:
   - provider: gcp-compute
     properties:
-      vcluster.com/csi-enabled: "false"
+      vcluster.com/csi-enabled: "true"
       vcluster.com/vpc-cidr: "10.20.0.0/16"
     dynamic:
     - name: gcp-cpu-nodes
@@ -203,7 +206,7 @@ Refer to the full [list of permissions](environment/infrastructure/iam.tf) for d
 Cluster administrators should be aware of the following:
 
 - **Shared permissions** – all pods running in a **host network** may gain the same access level as CCM and CSI.  
-- **Mitigation** – cluster administrators can disable CCM and CSI deployments.  
+- **Mitigation** – CCM and CSI permissions are disabled by default. Enable them only when needed via `vcluster.com/ccm-enabled` and `vcluster.com/csi-enabled`.  
   In that case, virtual machines will not be granted additional permissions.  
   However, responsibility for deploying and securely configuring CCM and CSI will then fall to the cluster administrator.  
 

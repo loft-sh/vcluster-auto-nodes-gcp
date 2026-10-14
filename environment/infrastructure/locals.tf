@@ -23,6 +23,6 @@ locals {
   public_subnet_cidr  = cidrsubnet(local.vpc_cidr, local.subnet_prefix - local.vpc_prefix, 0)
   private_subnet_cidr = cidrsubnet(local.vpc_cidr, local.subnet_prefix - local.vpc_prefix, 1)
 
-  ccm_enabled = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/ccm-enabled"]), true))
-  csi_enabled = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/csi-enabled"]), true))
+  ccm_enabled = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/ccm-enabled"]), false))
+  csi_enabled = nonsensitive(try(tobool(var.vcluster.properties["vcluster.com/csi-enabled"]), false))
 }
