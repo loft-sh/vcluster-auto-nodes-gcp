@@ -28,7 +28,7 @@ module "vpc" {
 
   project_id   = local.project
   network_name = format("vcluster-network-%s", local.random_id)
-  description  = format("Network for %s", local.vcluster_name)
+  description  = format("Network for network environment %s", local.network_environment_name)
 
   subnets = [
     {

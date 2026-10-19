@@ -2,7 +2,7 @@ locals {
   firewall_rules = {
     # Allow SSH access via IAP (Identity-Aware Proxy)
     "allow-iap-ssh" = {
-      description   = format("Allow SSH access via Identity-Aware Proxy for %s", local.vcluster_name)
+      description   = format("Allow SSH access via Identity-Aware Proxy for network environment %s", local.network_environment_name)
       source_ranges = ["35.235.240.0/20"] # IAP source ranges
       target_tags   = ["allow-iap-ssh"]
       direction     = "INGRESS"
@@ -14,7 +14,7 @@ locals {
     }
     # Allow HTTP/HTTPS traffic for public instances
     "allow-web-traffic" = {
-      description   = format("Allow HTTP and HTTPS traffic for %s", local.vcluster_name)
+      description   = format("Allow HTTP and HTTPS traffic for network environment %s", local.network_environment_name)
       source_ranges = ["0.0.0.0/0"]
       direction     = "INGRESS"
       allow = [{
@@ -24,7 +24,7 @@ locals {
     }
     # Allow internal communication between subnets
     "allow-internal" = {
-      description   = format("Allow internal communication within VPC for %s", local.vcluster_name)
+      description   = format("Allow internal communication within VPC for network environment %s", local.network_environment_name)
       source_ranges = [local.public_subnet_cidr, local.private_subnet_cidr]
       direction     = "INGRESS"
       allow = [
@@ -44,7 +44,7 @@ locals {
     },
     # Allow health checks from Google Cloud Load Balancer
     "allow-health-check" = {
-      description   = format("Allow health checks from Google Cloud Load Balancer for %s", local.vcluster_name)
+      description   = format("Allow health checks from Google Cloud Load Balancer for network environment %s", local.network_environment_name)
       priority      = 1000
       source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
       direction     = "INGRESS"
